@@ -1,0 +1,8 @@
+# Ignoring the Builds Folder
+**/Builds
+
+#Ignoring the Library code
+**/JuceLibraryCode
+**/.DS_Store
+
+ 
