@@ -1,6 +1,9 @@
 # Ignoring the Builds Folder
 **/Builds
 
+# Ignoring the .vs folders
+**/.vs
+
 #Ignoring the Library code
 **/JuceLibraryCode
 **/.DS_Store

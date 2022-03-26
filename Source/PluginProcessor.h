@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 
+
 enum Slope
 {
     Slope_12,
@@ -17,6 +18,7 @@ enum Slope
     Slope_36,
     Slope_48
 };
+
 
 struct ChainSettings
 {
@@ -86,6 +88,7 @@ private:
 
     MonoChain leftChain, rightChain;
 
+    
     //An enum that represents each links position in the chain
     enum ChainPositions 
     {
@@ -93,6 +96,10 @@ private:
         Peak,
         HighCut
     };
+    
+    void updatePeakFilter(const ChainSettings& chainSettings);
+    using Coefficients = Filter::CoefficientsPtr;
+    static void updateCoefficients( const Coefficients& old, const Coefficients& replacements);
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleEQAudioProcessor)
