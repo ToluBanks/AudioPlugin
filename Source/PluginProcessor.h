@@ -30,6 +30,22 @@ struct ChainSettings
 ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts);
 
 
+//Creating DSP Aliases because we want to process stereo audio and by default its set to mono.
+using Filter = juce::dsp::IIR::Filter<float>;
+
+using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
+
+using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
+
+//An enum that represents each links position in the chain
+enum ChainPositions
+{
+    LowCut,
+    Peak,
+    HighCut
+};
+
+
 //==============================================================================
 /**
 */
@@ -79,23 +95,9 @@ public:
     juce::AudioProcessorValueTreeState apvts {*this,nullptr, "Parameters", createParameterLayout()};
 
 private:
-    //Creating DSP Aliases because we want to process stereo audio and by default its set to mono.
-    using Filter = juce::dsp::IIR::Filter<float>;
-
-    using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
-
-    using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
-
+    
     MonoChain leftChain, rightChain;
 
-    
-    //An enum that represents each links position in the chain
-    enum ChainPositions 
-    {
-        LowCut,
-        Peak,
-        HighCut
-    };
     
     void updatePeakFilter(const ChainSettings& chainSettings);
     using Coefficients = Filter::CoefficientsPtr;
@@ -152,7 +154,7 @@ private:
     void updateLowCutFilters(const ChainSettings& chainSettings);
     void updateHighCutFilters(const ChainSettings& chainSettings);
     void updateFilters();
-
+ 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleEQAudioProcessor)
 };
