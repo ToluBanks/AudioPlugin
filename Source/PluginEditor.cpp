@@ -247,7 +247,10 @@ void ResponseCurveComponent::paint(juce::Graphics& g)
 
     g.fillAll(Colours::lightsalmon);
 
-    auto responseArea = getLocalBounds();
+    g.drawImage(background, getLocalBounds().toFloat());
+
+    //auto responseArea = getLocalBounds();
+    auto responseArea = getAnalysisArea();//getRenderArea();
    
     auto w = responseArea.getWidth();
 
@@ -312,7 +315,7 @@ void ResponseCurveComponent::paint(juce::Graphics& g)
     }
 
     g.setColour(Colours::darkslateblue);
-    g.drawRoundedRectangle(responseArea.toFloat(), 4.f, 1.f);
+    g.drawRoundedRectangle(getRenderArea().toFloat(), 4.f, 1.f);
 
     g.setColour(Colours::white);
     g.strokePath(responseCurve, PathStrokeType(2.f));
@@ -323,8 +326,74 @@ void ResponseCurveComponent::paint(juce::Graphics& g)
    // g.setFont (15.0f);
    // g.drawFittedText ("Hello all the World!", getLocalBounds(), juce::Justification::centred, 1);
 
+    
+}
+void ResponseCurveComponent::resized()
+{
+    using namespace juce;
+    background = Image(Image::PixelFormat::RGB, getWidth(), getHeight(), true);
+    Graphics g(background);
+
+    // drawing frequncy lines 
+    Array<float>freqs{ 20,30,40,50,100,200,300,400,500,1000,2000,3000,4000,5000,10000,20000 };
+
+    auto renderArea = getAnalysisArea();
+    auto left = renderArea.getX();
+    auto right = renderArea.getRight();
+    auto top = renderArea.getY();
+    auto bottom = renderArea.getBottom();
+    auto width = renderArea.getWidth();
+
+    Array<float> xs;
+    for (auto f : freqs)
+    {
+        auto normX = mapFromLog10(f, 20.f, 20000.f);
+        xs.add(left + width * normX);
+    }
+
+    g.setColour(Colours::slategrey);
+    //for (auto f : freqs)
+    for(auto x : xs)
+    {
+        g.drawVerticalLine(x, top, bottom);
+        //auto normX = mapFromLog10(f, 20.f, 20000.f);
+        //g.drawVerticalLine(getWidth() * normX, 0.f, getHeight());
+
+    }
+
+    Array<float> gain{ -24,-12,0,12,24 };
+
+    for (auto gDb : gain)
+    {
+        auto y = jmap(gDb, -24.f, 24.f, float(bottom), float(top));
+        //g.drawHorizontalLine(y, 0, getWidth());
+        g.setColour(gDb == 0.f ? Colour(0xff800080) : Colours::slategrey);
+        g.drawHorizontalLine(y, left, right);
+    }
+    //g.drawRect(getAnalysisArea());
 }
 
+juce::Rectangle<int> ResponseCurveComponent::getRenderArea() 
+{
+    auto bounds = getLocalBounds();
+   // bounds.reduce(11,//JUCE_LIVE_CONSTANT(11), 
+     //               11//JUCE_LIVE_CONSTANT(11) 
+       //             );
+    bounds.removeFromTop(11);
+    bounds.removeFromBottom(4);
+    bounds.removeFromLeft(20);
+    bounds.removeFromRight(20);
+    return bounds;
+
+}
+
+juce::Rectangle<int> ResponseCurveComponent::getAnalysisArea()
+{
+    auto bounds = getRenderArea();
+    bounds.removeFromTop(4);
+    bounds.removeFromBottom(4);
+    return bounds;
+}
 
 //==============================================================================
 SimpleEQAudioProcessorEditor::SimpleEQAudioProcessorEditor (SimpleEQAudioProcessor& p)
